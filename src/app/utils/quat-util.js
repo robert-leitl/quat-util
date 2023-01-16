@@ -2,11 +2,9 @@
 // https://theorangeduck.com/page/visualizing-rotation-spaces
 
 import { quat, vec3 } from "gl-matrix";
+import { clamp } from "./math-util";
 
 export const quatUtil = {};
-
-// helper functions
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
 /**
  * Calculates the quaternion describing the difference between the 

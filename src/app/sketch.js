@@ -8,7 +8,9 @@ import { mat4, quat, vec3 } from 'gl-matrix';
 import { quatUtil } from './utils/quat-util';
 import { Object3D } from 'three';
 import { SecondOrderSystemQuaternion } from './utils/second-order-quaternion';
-import { SecondOrderSystemValues } from './utils/second-order-system';
+import { SecondOrderSystemValues } from './utils/second-order-value';
+import { SecondOrderSystemAngle } from './utils/second-order-angle';
+import { PI_2 } from './utils/math-util';
 
 // the target duration of one frame in milliseconds
 const TARGET_FRAME_DURATION = 16;
@@ -31,13 +33,15 @@ const settings = {
 
 // module variables
 var _isDev, _pane, camera, scene, renderer, controls, mesh;
-var targetObj, posTargetMesh;
+var targetObj, posTargetMesh, angleTargetMesh;
 
 const targetOrientation = quat.create();
 const lookAtOrientation = quat.create();
 const targetPosition = vec3.create();
+let targetAngle = 0;
 var soq = new SecondOrderSystemQuaternion(1, .6, 0.9, targetOrientation);
 var sop = new SecondOrderSystemValues(1, 0.6, 0.9, targetPosition);
+var soa = new SecondOrderSystemAngle(1, 0.6, 0.9, targetAngle);
 
 function init(canvas, onInit = null, isDev = false, pane = null) {
     _isDev = isDev;
@@ -75,14 +79,18 @@ function init(canvas, onInit = null, isDev = false, pane = null) {
     posTargetMesh = new THREE.Mesh( posTargetGeo, new THREE.MeshBasicMaterial({color: '#ff0000'}));
     scene.add(posTargetMesh);
 
-    const axesHelper = new THREE.AxesHelper( 5 );
-    scene.add( axesHelper );    
+    const angleTargetGeo = new THREE.ConeGeometry(0.01, 0.7);
+    angleTargetMesh = new THREE.Mesh( angleTargetGeo, new THREE.MeshBasicMaterial({color: '#ffff00'}));
+    scene.add(angleTargetMesh);
+
+    //const axesHelper = new THREE.AxesHelper( 5 );
+    //scene.add( axesHelper );    
 
     renderer = new THREE.WebGLRenderer( { canvas, antialias: true } );
     document.body.appendChild( renderer.domElement );
 
     controls = new OrbitControls( camera, renderer.domElement );
-    controls.update();
+    //controls.update();
 
     fromEvent(renderer.domElement, 'pointerdown').subscribe(() => {
         quat.random(targetOrientation);
@@ -94,6 +102,8 @@ function init(canvas, onInit = null, isDev = false, pane = null) {
         vec3.scale(targetPosition, targetPosition, 0.3);
 
         vec3.copy(targetPosition, vec3.scale(target, target, -1));
+
+        targetAngle = PI_2 - Math.atan2(target[0], target[1]);
     });
 
     if (onInit) onInit(this);
@@ -122,7 +132,7 @@ function resize() {
 }
 
 function animate() {
-    controls.update();
+    //controls.update();
 
     targetObj.quaternion.fromArray(targetOrientation);
 
@@ -140,6 +150,9 @@ function animate() {
 
     sop.update(dt, targetPosition);
     posTargetMesh.position.fromArray(sop.values);
+
+    soa.update(dt, targetAngle);
+    angleTargetMesh.rotation.z = soa.value;
 
     //mesh.quaternion.slerp(targetObj.quaternion, 0.1);
 }
