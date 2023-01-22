@@ -46,7 +46,7 @@ export class SecondOrderSystemAngle {
 
         // estimate the target velocity
         if (xd == null) {
-            xd = (x - this.#xp) / dt;
+            xd = deltaAngle(this.#xp, x) / dt;
             this.#xp = x;
         }
     
