@@ -125,7 +125,7 @@ quatUtil.toScaledAngleAxis = (out, q) => {
  * @param {number} dt The timestep
  * @returns out
  */
-quatUtil.toAngularVerlocity = (out, q, dt) => {
+quatUtil.toAngularVelocity = (out, q, dt) => {
     const v = quatUtil.toScaledAngleAxis(vec3.create(), q);
     return vec3.scale(out, v, 1 / dt);
 }
@@ -168,7 +168,7 @@ quatUtil.abs = (out, x) => {
 quatUtil.differentiateAngularVelocity = (out, next, curr, dt) => {
     const q = quatUtil.diff(quat.create(), next, curr);
     quatUtil.abs(q, q);
-    return quatUtil.toAngularVerlocity(out, q, dt);
+    return quatUtil.toAngularVelocity(out, q, dt);
 }
 
 /**
